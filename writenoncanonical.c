@@ -91,6 +91,63 @@ int main(int argc, char** argv)
     o indicado no guião
     */
 
+
+    const char flag = 0x5c;
+	const char sender_address = 0x03;
+	const char receiver_address = 0x01;
+	const char control_set = 0x08;
+	const char control_ua = 0x06;
+	
+	char recv[32];
+	
+    while (STOP==FALSE) {       /* loop for input */
+        res = read(fd,recv,255);   /* returns after 5 chars have been input */
+        
+        printf("%x \n", recv[0]);
+        printf("%x \n", recv[1]);
+        printf("%x \n", recv[2]);
+        printf("%x \n", recv[3]);
+        printf("%x \n", recv[4]);
+        char received_correct = 1;
+        if (memcmp(recv, &flag, 1)==0){
+			printf("Flag correct\n");
+		}else{
+			received_correct=0;
+		}
+		
+		if (memcmp(recv+1, &receiver_address, 1)==0){
+			printf("Address correct\n");
+		}else{
+			received_correct=0;
+		}
+		
+		if (memcmp(recv+2, &control_ua, 1)==0){
+			printf("Control is UA\n");
+		}else{
+			received_correct=0;
+		}
+		
+		char xor_shouldbe = *(recv+1) ^ *(recv+2);
+		if (memcmp(recv+3, &xor_shouldbe, 1)==0){
+			printf("BCC is correct\n");
+		}else{
+			received_correct=0;
+		}
+		
+		if (memcmp(recv+4, &flag, 1)==0){
+			printf("END flag is correct\n");
+		}else{
+			received_correct=0;
+		}
+		
+		if (received_correct){
+			printf("Received UA correctly\n");
+			
+		}
+		
+		STOP=TRUE;
+    }
+
    sleep(1);
 
 
@@ -98,8 +155,6 @@ int main(int argc, char** argv)
         perror("tcsetattr");
         exit(-1);
     }
-
-    // TODO - add the receiving part
         
 
 
