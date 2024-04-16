@@ -75,7 +75,7 @@ int main(int argc, char** argv)
     printf("New termios structure set\n");
 
 
-    //state machinw
+    //state machine
 
 
     buf[0]=0x5c;
@@ -102,11 +102,13 @@ int main(int argc, char** argv)
 	const char control_ua = 0x06;
 	
 	char recv[32];
+    int recv_i=0;
 	
     while (STOP==FALSE) {       /* loop for input */
         res = read(fd,recv,8);   /* returns after 5 chars have been input */
         char received_byte = *buf;
-
+        recv[recv_i] = received_byte;
+        recv_i++;
 
         //UA state machine
         switch (state){
@@ -118,20 +120,35 @@ int main(int argc, char** argv)
             case FLAG_RCV:
                 if (received_byte == sender_address)
                     state = A_RCV;
-                else
+                else{
                     state = START;
+                    recv_i = 0;
+                }
                 break;
 
             case A_RCV:
                 if (received_byte == sender_address)
                     state = A_RCV;
+                else{
+                    state = START;
+                    recv_i = 0;
+                }
                 break;
 
             case C_RCV:
-                if (received_byte == sender_address)
-                    state = A_RCV;
+                if (received_byte == (*(recv-1) ^ *(recv-2)))
+                    state = BCC_OK;
+                else{
+                    state = START;
+                    recv_i = 0;
+                }
                 break;
 
+            case BCC_OK:
+                if (received_byte == flag)
+                    state = STOP;
+                    STOP = true;
+                    break;
         }
 
     }
