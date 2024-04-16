@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 {
     int fd,c, res;
     struct termios oldtio,newtio;
-    char buf[5];
+    char buf[255];
     int i, sum = 0, speed = 0;
 
     if ( (argc < 2) ||
@@ -81,15 +81,7 @@ int main(int argc, char** argv)
     printf("New termios structure set\n");
 
 
-    //state machine
-
-
-    
-
-
-    res = write(fd,buf,5);
-    printf("%d bytes written\n", res);
-
+    //state machinw
 
     /*
     O ciclo FOR e as instruções seguintes devem ser alterados de modo a respeitar
@@ -104,21 +96,26 @@ int main(int argc, char** argv)
 	const char control_ua = 0x06;
 	
 	buf[0]=flag;
-    buf[1]=transmitter_address;
+    buf[1]=receiver_address;
     buf[2]=control_set;
     buf[3]=buf[1]^buf[2];
     buf[4]=flag;
     
-	char state;
+    res = write(fd,buf,5);
+    printf("%d bytes written\n", res);
+
+    
+	char state = START;
+	char received_byte;
 	char recv[32];
     int recv_i=0;
 	
     while (STOP==FALSE) {       /* loop for input */
-        res = read(fd,recv,8);   /* returns after 5 chars have been input */
-        char received_byte = *buf;
+        res = read(fd,&received_byte,1);   /* returns after 5 chars have been input */
         recv[recv_i] = received_byte;
         recv_i++;
-
+        printf("Byte: %x\n", received_byte);
+		printf("State: %d\n", state);
         //UA state machine
         switch (state){
             case START:
@@ -127,7 +124,7 @@ int main(int argc, char** argv)
                 break;
 
             case FLAG_RCV:
-                if (received_byte == receiver_address)
+                if (received_byte == transmitter_address)
                     state = A_RCV;
                 else{
                     state = START;
@@ -136,7 +133,7 @@ int main(int argc, char** argv)
                 break;
 
             case A_RCV:
-                if (received_byte == control_set)
+                if (received_byte == control_ua)
                     state = C_RCV;
                 else{
                     state = START;
@@ -145,7 +142,7 @@ int main(int argc, char** argv)
                 break;
 
             case C_RCV:
-                if (received_byte == (*(recv-1) ^ *(recv-2)))
+                if (received_byte == (*(recv+1) ^ *(recv+2)))
                     state = BCC_OK;
                 else{
                     state = START;
@@ -180,3 +177,4 @@ int main(int argc, char** argv)
     close(fd);
     return 0;
 }
+
