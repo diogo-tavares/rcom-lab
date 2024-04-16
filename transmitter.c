@@ -11,6 +11,12 @@
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
+#define START 1
+#define FLAG_RCV 2
+#define A_RCV 3
+#define C_RCV 4
+#define BCC_OK 5
+#define STOP_STATE 6
 
 volatile int STOP=FALSE;
 
@@ -78,11 +84,7 @@ int main(int argc, char** argv)
     //state machine
 
 
-    buf[0]=0x5c;
-    buf[1]=0x03;
-    buf[2]=0x08;
-    buf[3]=buf[1]^buf[2];
-    buf[4]=0x5c;
+    
 
 
     res = write(fd,buf,5);
@@ -96,11 +98,18 @@ int main(int argc, char** argv)
 
 
     const char flag = 0x5c;
-	const char sender_address = 0x03;
+	const char transmitter_address = 0x03;
 	const char receiver_address = 0x01;
 	const char control_set = 0x08;
 	const char control_ua = 0x06;
 	
+	buf[0]=flag;
+    buf[1]=transmitter_address;
+    buf[2]=control_set;
+    buf[3]=buf[1]^buf[2];
+    buf[4]=flag;
+    
+	char state;
 	char recv[32];
     int recv_i=0;
 	
@@ -118,7 +127,7 @@ int main(int argc, char** argv)
                 break;
 
             case FLAG_RCV:
-                if (received_byte == sender_address)
+                if (received_byte == receiver_address)
                     state = A_RCV;
                 else{
                     state = START;
@@ -127,8 +136,8 @@ int main(int argc, char** argv)
                 break;
 
             case A_RCV:
-                if (received_byte == sender_address)
-                    state = A_RCV;
+                if (received_byte == control_set)
+                    state = C_RCV;
                 else{
                     state = START;
                     recv_i = 0;
@@ -145,10 +154,14 @@ int main(int argc, char** argv)
                 break;
 
             case BCC_OK:
-                if (received_byte == flag)
+                if (received_byte == flag){
                     state = STOP;
-                    STOP = true;
-                    break;
+                    STOP = TRUE;
+				}
+                break;
+                
+            case STOP_STATE:
+				break;
         }
 
     }
@@ -167,4 +180,3 @@ int main(int argc, char** argv)
     close(fd);
     return 0;
 }
-
