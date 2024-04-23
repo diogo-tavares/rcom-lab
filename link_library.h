@@ -47,3 +47,5 @@ int llopen(linkLayer connectionParameters);
 int llwrite(int fd, char * buffer, int length);
 int llread(int fd, char * buffer);
 int llclose(int fd, linkLayer connectionParameters, int showStatistics);
+int byte_stuffing(char * buf, char * newbuff);
+int byte_destuffing(char * buf, char * newbuff);

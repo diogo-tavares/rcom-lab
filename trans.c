@@ -30,7 +30,9 @@ int main(int argc, char** argv)
     printf("Transmitter: Port opened\n");
 
     char data[10] = {1,2,3,4,5,6,7,8,9};
-    //llwrite(fd, data, 10);
+    char new[sizeof(data)];
+    byte_stuffing(data, new);
+    //llwrite(fd, new, 10);
 
     llclose(fd, connectionParameters, 0);
     printf("Transmitter: Port Closed\n");

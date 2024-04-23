@@ -82,48 +82,53 @@ int llopen(linkLayer connectionParameters){
         res = read(fd,(&received_byte),1);   /* read byte by byte */
         recv[recv_i] = received_byte;
         recv_i++;
+        printf("State: %d\n", state);
         printf("Received: %x\n", received_byte);
 
-        //UA state machine
-        switch (state){
-            case START:
-                if (received_byte == FLAG)
-                    state = FLAG_RCV;
-                break;
-
-            case FLAG_RCV:
-                if (received_byte == expected_address)
-                    state = A_RCV;
-                else{
-                    state = START;
-                    recv_i = 0;
-                }
-                break;
-
-            case A_RCV:
-                if (received_byte == expected_control)
-                    state = C_RCV;
-                else{
-                    state = START;
-                    recv_i = 0;
-                }
-                break;
-
-            case C_RCV:
-                if (received_byte == (recv[recv_i-2] ^ recv[recv_i-3]))
-                    state = BCC_OK;
-                else{
-                    state = START;
-                    recv_i = 0;
-                }
-                break;
-
-            case BCC_OK:
-                if (received_byte == FLAG)
-                    state = STOP;
-                    STOP = TRUE;
+        if (received_byte == FLAG)
+            state = FLAG_RCV;
+        else{
+            //UA state machine
+            switch (state){
+                case START:
+                    if (received_byte == FLAG)
+                        state = FLAG_RCV;
                     break;
-        }
+
+                case FLAG_RCV:
+                    if (received_byte == expected_address)
+                        state = A_RCV;
+                    else{
+                        state = START;
+                        recv_i = 0;
+                    }
+                    break;
+
+                case A_RCV:
+                    if (received_byte == expected_control)
+                        state = C_RCV;
+                    else{
+                        state = START;
+                        recv_i = 0;
+                    }
+                    break;
+
+                case C_RCV:
+                    if (received_byte == (recv[recv_i-2] ^ recv[recv_i-3]))
+                        {state = BCC_OK;
+                        printf("BCC OK\n");}
+                    else{
+                        state = START;
+                        recv_i = 0;
+                    }
+                    break;
+
+                case BCC_OK:
+                    if (received_byte == FLAG)
+                        state = STOP;
+                        STOP = TRUE;
+                        break;
+            }}
     }
 
     // RECEIVER RESPONDS WITH UA
@@ -376,4 +381,58 @@ int llwrite(int fd, char * buffer, int length){
 int llread(int fd, char * buffer){
     // read character by character until flag is encountered
 
+}
+
+int byte_stuffing(char *buf, char *newbuff)
+{
+    int i=0;
+    int size = sizeof(buf);
+    if (size==0)
+    {
+        return -1;
+    }
+    while (i<size)
+    {
+        if (buf[i]=='5c')
+        {
+            newbuff[i]='5d 7c';
+        }
+        else if(buf[i]=='5d')
+        {
+            newbuff[i]='5d 7d';
+        }
+        else
+        {
+            newbuff[i]=buf[i];
+        }
+    }
+}
+
+int byte_destuffing(char *buf, char *newbuff)
+{
+    int i=0;
+    int size = sizeof(buf);
+    if (size==0)
+    {
+        return -1;
+    }
+    
+    while (i<size)
+    {
+        if (buf[i]=='5d 7c')
+        {
+            newbuff[i]='5c';
+            i++;
+        }
+        else if(buf[i]=='5d 7d')
+        {
+            newbuff[i]='5d';
+            i++;
+        }
+        else
+        {
+            newbuff[i]=buf[i];
+            i++;
+        }
+    }
 }
