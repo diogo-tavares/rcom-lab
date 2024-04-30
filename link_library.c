@@ -85,9 +85,7 @@ int llopen(linkLayer connectionParameters){
         printf("State: %d\n", state);
         printf("Received: %x\n", received_byte);
 
-        if (received_byte == FLAG)
-            state = FLAG_RCV;
-        else{
+
             //UA state machine
             switch (state){
                 case START:
@@ -96,9 +94,9 @@ int llopen(linkLayer connectionParameters){
                     break;
 
                 case FLAG_RCV:
-                    if (received_byte == expected_address)
+                    if (received_byte == expected_address){
                         state = A_RCV;
-                    else{
+                    }else{
                         state = START;
                         recv_i = 0;
                     }
@@ -115,8 +113,7 @@ int llopen(linkLayer connectionParameters){
 
                 case C_RCV:
                     if (received_byte == (recv[recv_i-2] ^ recv[recv_i-3]))
-                        {state = BCC_OK;
-                        printf("BCC OK\n");}
+                        {state = BCC_OK;}
                     else{
                         state = START;
                         recv_i = 0;
@@ -124,13 +121,19 @@ int llopen(linkLayer connectionParameters){
                     break;
 
                 case BCC_OK:
-                    if (received_byte == FLAG)
-                        state = STOP;
+                    if (received_byte == FLAG){
                         STOP = TRUE;
-                        break;
-            }}
-    }
+                    }
+                    break;
 
+                default:
+                    if (received_byte == FLAG){
+                        state = FLAG_RCV;
+                    }
+                    break;
+            
+        }
+    }
     // RECEIVER RESPONDS WITH UA
     if ((role==RECEIVER)){
         buf[0]=FLAG;
@@ -334,10 +337,11 @@ int llclose(int fd, linkLayer connectionParameters, int showStatistics){
                     break;
 
                 case BCC_OK:
-                    if (received_byte == FLAG)
+                    if (received_byte == FLAG){
                         state = STOP;
                         STOP = TRUE;
                         break;
+                    }
             }
         }
     }
