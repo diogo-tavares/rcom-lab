@@ -389,12 +389,6 @@ int llread(int fd, char * buffer)
     int res;
     char state=START;
 
-    const char flag = 0x5c;
-	const char transmitter_address = 0x03;
-	const char receiver_address = 0x01;
-	const char control_set = 0x08;
-	const char control_ua = 0x06;
-
     char recv[32];
     int recv_i=0;
     char received_byte;
@@ -410,7 +404,7 @@ int llread(int fd, char * buffer)
         //UA state machine
         switch (state){
             case START:
-                if (received_byte == flag){
+                if (received_byte == FLAG){
                     state = FLAG_RCV;
                     printf("State: %d, Byte: %x\n", state, received_byte);
                 }
@@ -418,7 +412,7 @@ int llread(int fd, char * buffer)
                 break;
  
             case FLAG_RCV:
-                if (received_byte == receiver_address)
+                if (received_byte == RECEIVER_ADDRESS)
                     state = A_RCV;
                 else{
                     state = START;
@@ -427,7 +421,7 @@ int llread(int fd, char * buffer)
                 break;
  
             case A_RCV:
-                if (received_byte == control_set)
+                if (received_byte == CONTROLS_SET)
                     state = C_RCV;
                 else{
                     state = START;
@@ -445,13 +439,13 @@ int llread(int fd, char * buffer)
                 break;
  
             case BCC_OK:
-                if (received_byte == flag){
-                    //state = STOP_STATE;
+                if (received_byte == FLAG){
+                    state = NULL;
                     STOP = TRUE;
 				}
                 break;
         
-            //case STOP_STATE:
+            default:
             break;
         }
     }
