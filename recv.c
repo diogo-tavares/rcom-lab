@@ -14,18 +14,20 @@
 int main(int argc, char** argv)
 {
     int fd;
-    //char buf[256];
-    //char new[256];
     linkLayer connectionParameters;
-    strcpy(connectionParameters.serialPort,"/dev/ttyS0");
-    connectionParameters.role = RECEIVER;
-    connectionParameters.baudRate = B38400;
 
-    /*if ( (argc < 2) ||
-         ((strcmp("/dev/ttyS0", argv[1])!=0) &&
-          (strcmp("/dev/ttyS1", argv[1])!=0) )) {
+    if ( (argc < 2)) {
         printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
-        exit(1);printf("BCC OK\n");}gv[1];*-*/
+        exit(1);
+    }
+
+    char* port = argv[1];
+
+    printf("Port %s\n", port);
+    strcpy(connectionParameters.serialPort,port);
+    connectionParameters.role = RECEIVER;
+    connectionParameters.baudRate = 38400;
+
 
     fd = llopen(connectionParameters);
     printf("Receiver: Port opened\n");
