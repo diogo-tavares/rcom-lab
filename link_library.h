@@ -20,6 +20,11 @@ typedef struct linkLayer{
  int timeOut;
 } linkLayer;
 
+typedef struct control_packet{
+ char address;
+ char control;
+} control_packet;
+
 //ROLE
 #define NOT_DEFINED -1
 #define TRANSMITTER 0

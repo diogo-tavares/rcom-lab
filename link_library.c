@@ -353,6 +353,8 @@ int llclose(int fd, linkLayer connectionParameters, int showStatistics){
     close(fd);
 }
 
+char Ns_send = 0;
+
 int llwrite(int fd, char * buffer, int length){
     
     if (length>MAX_PAYLOAD_SIZE){
@@ -365,7 +367,7 @@ int llwrite(int fd, char * buffer, int length){
     buf[0] = FLAG;
     buf[1] = RECEIVER_ADDRESS; // we assume that only transmitter uses llwrite, but otherwise its strange
    
-    char Ns = 0; // TODO keep track of Ns
+    char Ns = Ns_send;
     char control = 0b1000000 | (Ns<<7);
     buf[2] = control;
 
@@ -385,8 +387,80 @@ int llwrite(int fd, char * buffer, int length){
     int res = write(fd,buf,send_buffer_len);
     printf("WRITING, %d bytes written\n", res);
 
-    // NOW WAIT FOR RR(1)
+    printf("Waiting for response\n");
+    res = read(fd,(&received_byte),5); 
+}
 
+
+
+int read_control_packet(contrl_packet* packet){
+    char recv[5];
+    while (STOP==FALSE) {       /* loop for input */
+        res = read(fd,(&received_byte),1);   /* read byte by byte */
+        recv[recv_i] = received_byte;
+        recv_i++;
+        printf("State: %d\n", state);
+        printf("Received: %x\n", received_byte);
+
+        //UA state machine
+        switch (state){
+                case START:
+                    if (received_byte == FLAG)
+                        state = FLAG_RCV;
+                    break;
+
+                case FLAG_RCV:
+                    if (received_byte == expected_address){
+                        state = A_RCV;
+                    }else{
+                        state = START;
+                        recv_i = 0;
+                    }
+                    break;
+
+                case A_RCV:
+                    if (received_byte == expected_control)
+                        state = C_RCV;
+                    else{
+                        state = START;
+                        recv_i = 0;
+                    }
+                    break;
+
+                case C_RCV:
+                    if (received_byte == (recv[recv_i-2] ^ recv[recv_i-3]))
+                        {state = BCC_OK;}
+                    else{
+                        state = START;
+                        recv_i = 0;
+                    }
+                    break;
+
+                case BCC_OK:
+                    if (received_byte == FLAG){
+                        STOP = TRUE;
+                    }
+                    break;
+
+                default:
+                    if (received_byte == FLAG){
+                        state = FLAG_RCV;
+                    }
+                    break;
+            
+        }
+    }
+    // RECEIVER RESPONDS WITH UA
+    if ((role==RECEIVER)){
+        buf[0]=FLAG;
+        buf[1]=SENDER_ADDRESS;
+        buf[2]=CONTROL_UA;
+        buf[3]=buf[1]^buf[2];
+        buf[4]=FLAG;
+        res = write(fd,buf,5);
+    }
+    
+    return fd;
 }
 
 int llread(int fd, char * buffer)
