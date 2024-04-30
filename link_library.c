@@ -377,8 +377,15 @@ int llwrite(int fd, char * buffer, int length){
     buf[send_buffer_len-2] = 0; // TODO BCC VALUE
     buf[send_buffer_len-1] = FLAG;
 
+    for (int i=0; i <send_buffer_len; i++)
+    {
+        printf("i: %d contains %x \n", i, buf[i]);
+    }
+
     int res = write(fd,buf,send_buffer_len);
     printf("WRITING, %d bytes written\n", res);
+
+    // NOW WAIT FOR RR(1)
 
 }
 
