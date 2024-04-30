@@ -388,12 +388,11 @@ int llwrite(int fd, char * buffer, int length){
     printf("WRITING, %d bytes written\n", res);
 
     printf("Waiting for response\n");
-    res = read(fd,(&received_byte),5); 
 }
 
 
 
-int read_control_packet(contrl_packet* packet){
+int read_control_packet(control_packet* packet){
     char recv[5];
     while (STOP==FALSE) {       /* loop for input */
         res = read(fd,(&received_byte),1);   /* read byte by byte */
