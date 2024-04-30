@@ -389,9 +389,73 @@ int llwrite(int fd, char * buffer, int length){
 
 }
 
-int llread(int fd, char * buffer){
+int llread(int fd, char * buffer)
+{
     // read character by character until flag is encountered
+    int STOP=FALSE;
+    int res;
+    char state=START;
 
+    char recv[32];
+    int recv_i=0;
+    char received_byte;
+ 
+
+    while (STOP==FALSE) {  
+        printf("Reading\n");     /* loop for input */
+        res = read(fd,&received_byte,1); 
+        recv[recv_i] = received_byte;
+        recv_i++;
+
+        printf("LLREAD -> State: %d, Byte: %x, Res: %d\n, ", state, received_byte, res);
+        //UA state machine
+        switch (state){
+            case START:
+                if (received_byte == FLAG){
+                    state = FLAG_RCV;
+                    printf("State: %d, Byte: %x\n", state, received_byte);
+                }
+                    
+                break;
+ 
+            case FLAG_RCV:
+                if (received_byte == RECEIVER_ADDRESS)
+                    state = A_RCV;
+                else{
+                    state = START;
+                    recv_i = 0;
+                }
+                break;
+ 
+            case A_RCV:
+                if (received_byte == CONTROLS_SET)
+                    state = C_RCV;
+                else{
+                    state = START;
+                    recv_i = 0;
+                }
+                break;
+ 
+            case C_RCV:
+                if (received_byte == (recv[1]) ^ recv[2])
+                    state = BCC_OK;
+                else{
+                    state = START;
+                    recv_i = 0;
+                }
+                break;
+ 
+            case BCC_OK:
+                if (received_byte == FLAG){
+                    state = NULL;
+                    STOP = TRUE;
+				}
+                break;
+        
+            default:
+            break;
+        }
+    }
 }
 
 int byte_stuffing(char *buf, char *newbuff)
