@@ -392,75 +392,7 @@ int llwrite(int fd, char * buffer, int length){
 
 
 
-int read_control_packet(control_packet* packet){
-    char recv[5];
-    while (STOP==FALSE) {       /* loop for input */
-        res = read(fd,(&received_byte),1);   /* read byte by byte */
-        recv[recv_i] = received_byte;
-        recv_i++;
-        printf("State: %d\n", state);
-        printf("Received: %x\n", received_byte);
 
-        //UA state machine
-        switch (state){
-                case START:
-                    if (received_byte == FLAG)
-                        state = FLAG_RCV;
-                    break;
-
-                case FLAG_RCV:
-                    if (received_byte == expected_address){
-                        state = A_RCV;
-                    }else{
-                        state = START;
-                        recv_i = 0;
-                    }
-                    break;
-
-                case A_RCV:
-                    if (received_byte == expected_control)
-                        state = C_RCV;
-                    else{
-                        state = START;
-                        recv_i = 0;
-                    }
-                    break;
-
-                case C_RCV:
-                    if (received_byte == (recv[recv_i-2] ^ recv[recv_i-3]))
-                        {state = BCC_OK;}
-                    else{
-                        state = START;
-                        recv_i = 0;
-                    }
-                    break;
-
-                case BCC_OK:
-                    if (received_byte == FLAG){
-                        STOP = TRUE;
-                    }
-                    break;
-
-                default:
-                    if (received_byte == FLAG){
-                        state = FLAG_RCV;
-                    }
-                    break;
-            
-        }
-    }
-    // RECEIVER RESPONDS WITH UA
-    if ((role==RECEIVER)){
-        buf[0]=FLAG;
-        buf[1]=SENDER_ADDRESS;
-        buf[2]=CONTROL_UA;
-        buf[3]=buf[1]^buf[2];
-        buf[4]=FLAG;
-        res = write(fd,buf,5);
-    }
-    
-    return fd;
-}
 
 int llread(int fd, char * buffer)
 {
