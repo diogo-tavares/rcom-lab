@@ -10,7 +10,25 @@
 #include <unistd.h>
 #include "link_library.h"
 
+
+int TIMEOUT = TRUE;
+
 struct termios oldtio,newtio;
+
+void stop_alarm() { 
+    TIMEOUT = TRUE;
+}
+
+void start_alarm(int sec) {
+    TIMEOUT = FALSE;
+    signal(SIGALRM, stop_alarm);
+    alarm(sec);
+}
+
+int send_packet(int fd, unsigned char* data, int size_bytes){
+
+}
+
 /**
  * Open Port 'port'
  * and return file descriptor as int
