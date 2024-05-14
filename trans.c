@@ -32,14 +32,25 @@ int main(int argc, char** argv)
     fd = llopen(connectionParameters);
     printf("Transmitter: Port opened\n");
 
-    char data[10] = {1,2,3,4,5,6,7,8,9,10};
-    //byte_stuffing(data, new);
-    llwrite(fd, data, 10);
+    //char data[] = {1,2,3,4,5,6,7,8,9,10};
+    //char new[];
+    //new = byte_stuffing(data, new);
+    //llwrite(fd, data, 10);
+    
+    FILE * data;
+    data = fopen("test.txt", "rb");
+
+    ssize_t bytes;
+    char buf[1024];
+    while (( bytes=fread(buf, sizeof(char), 1024, data)) > 0)
+    {
+        llwrite(fd, buf, 1024);
+    }
 
     llclose(fd, connectionParameters, 0);
     printf("Transmitter: Port Closed\n");
 
-   sleep(1);
+    sleep(1);
 
 
 

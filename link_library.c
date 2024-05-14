@@ -9,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "link_library.h"
+#include <signal.h>
 
 
 int TIMEOUT = TRUE;
@@ -504,6 +505,7 @@ int byte_stuffing(char *buf, char *newbuff)
             newbuff[i]=buf[i];
         }
     }
+    return newbuff;
 }
 
 int byte_destuffing(char *buf, char *newbuff)
@@ -533,4 +535,5 @@ int byte_destuffing(char *buf, char *newbuff)
             i++;
         }
     }
+    return newbuff;
 }
