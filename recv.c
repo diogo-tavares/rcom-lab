@@ -49,6 +49,8 @@ int main(int argc, char** argv)
 
     //print readed buf
 
+    //llwrite(fd, )
+
 
     llclose(fd, connectionParameters, 0);
     printf("Receiver: Closed ports\n");

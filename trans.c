@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     printf("Transmitter: Port opened\n");
 
     char data[] = {1,2,3,4,5,6,7,8,9,10};
-    char new[];
+    //char new[];
     //new = byte_stuffing(data, new);
     llwrite(fd, data, 10);
     
@@ -42,10 +42,12 @@ int main(int argc, char** argv)
 
     ssize_t bytes;
     char buf[1024];
-    while (( bytes=fread(buf, sizeof(char), 1024, data)) > 0)
+    /*while (( bytes=fread(buf, sizeof(char), 1024, data)) > 0)
     {
         llwrite(fd, buf, 1024);
-    }
+    }*/
+
+    llread(fd, buf);
 
     llclose(fd, connectionParameters, 0);
     printf("Transmitter: Port Closed\n");
