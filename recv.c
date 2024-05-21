@@ -32,18 +32,18 @@ int main(int argc, char** argv)
     fd = llopen(connectionParameters);
     printf("Receiver: Port opened\n");
 
-    FILE *received;
+    //FILE *received;
     char buf[1024];
     int bytes;
 
-    received = fopen("test.txt", "wb");
+    //received = fopen("test.txt", "wb");
 
     llread(fd, buf);
 
-    while (( bytes=llread(fd, buf)) > 0)
+    /*while (( bytes=llread(fd, buf)) > 0)
     {
         fwrite(buf, sizeof(char), bytes, received);
-    }
+    }*/
 
     //byte_destuffing();
 
